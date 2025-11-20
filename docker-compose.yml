@@ -1,0 +1,38 @@
+services:
+  cassandra:
+    image: cassandra:4.0
+    container_name: cassandra
+    environment:
+      - CASSANDRA_START_RPC=true
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  janusgraph:
+    image: janusgraph/janusgraph:0.6.3
+    container_name: janusgraph
+    depends_on:
+      - cassandra
+      - elasticsearch
+    environment:
+      JANUS_PROPS: /configs/janusgraph.properties
+    volumes:
+      - ./conf/janusgraph-cassandra-es.properties:/configs/janusgraph.properties
+    ports:
+      - "8182:8182"
+
+volumes:
+  cassandra_data:
+  es_data:
+
